@@ -106,3 +106,23 @@ describe("POST /api/users/login", function () {
     expect(result.body.errors).toBeDefined();
   });
 });
+
+describe("GET /api/users/current", function () {
+  beforeEach(async () => {
+    await createTestUser();
+  });
+
+  afterEach(async () => {
+    await removeTestUser();
+  });
+
+  it("do get current user after login", async () => {
+    const result = await supertest(web)
+      .get("/api/users/current")
+      .set('Authorization', 'test');
+
+      expect(result.status).toBe(200);
+      expect(result.body.data.username).toBe("test");
+      expect(result.body.data.name).toBe("test");
+  });
+});
