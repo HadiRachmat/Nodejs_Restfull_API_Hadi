@@ -1,7 +1,8 @@
 import supertest from "supertest";
 import { web } from "../src/application/web.js";
 import { logger } from "../src/application/logging.js";
-import { createTestUser, removeTestUser } from "./test-util.js";
+import { createTestUser, getTestUser, removeTestUser } from "./test-util.js";
+import bcrypt from "bcrypt";
 
 describe("POST /api/users", () => {
   afterEach(async () => {
@@ -119,10 +120,46 @@ describe("GET /api/users/current", function () {
   it("do get current user after login", async () => {
     const result = await supertest(web)
       .get("/api/users/current")
-      .set('Authorization', 'test');
+      .set("Authorization", "test");
 
-      expect(result.status).toBe(200);
-      expect(result.body.data.username).toBe("test");
-      expect(result.body.data.name).toBe("test");
+    expect(result.status).toBe(200);
+    expect(result.body.data.username).toBe("test");
+    expect(result.body.data.name).toBe("test");
+  });
+
+  it("should test the token is wrong", async () => {
+    const result = await supertest(web)
+      .get("/api/users/current")
+      .set("Authorization", "salah");
+
+    expect(result.status).toBe(401);
+    expect(result.body.errors).toBeDefined();
+  });
+});
+
+describe("PATCH /api/users/current", function () {
+  beforeEach(async () => {
+    await createTestUser();
+  });
+
+  afterEach(async () => {
+    await removeTestUser();
+  });
+
+  it("should do update user and password  ", async () => {
+    const result = await supertest(web)
+      .patch("/api/users/current")
+      .set("Authorization", "test")
+      .send({
+        name: "Hadi Rachmat",
+        password: "lebihrahasia",
+      });
+
+    expect(result.status).toBe(200);
+    expect(result.body.data.username).toBe("test");
+    expect(result.body.data.name).toBe("Hadi Rachmat");
+
+    const user = await getTestUser();
+    expect(await bcrypt.compare("lebihrahasia", user.password)).toBe(true);
   });
 });
