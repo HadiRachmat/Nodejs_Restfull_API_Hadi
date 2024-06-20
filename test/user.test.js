@@ -163,3 +163,33 @@ describe("PATCH /api/users/current", function () {
     expect(await bcrypt.compare("lebihrahasia", user.password)).toBe(true);
   });
 });
+
+describe("DELETE /api/users/logout", function () {
+  beforeEach(async () => {
+    await createTestUser();
+  });
+
+  afterEach(async () => {
+    await removeTestUser();
+  });
+
+  it("should can doing logout feature", async () => {
+    const result = await supertest(web)
+      .delete("/api/users/logout")
+      .set("Authorization", "test");
+
+    expect(result.status).toBe(200);
+    expect(result.body.data).toBe("OKE");
+
+    const user = await getTestUser();
+    expect(user.token).toBe(null);
+  });
+
+  it("should cann't doing logout feature", async () => {
+    const result = await supertest(web)
+      .delete("/api/users/logout")
+      .set("Authorization", "salah");
+
+    expect(result.status).toBe(401);
+  });
+});

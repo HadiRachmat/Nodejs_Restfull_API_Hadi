@@ -106,25 +106,51 @@ const update = async (request) => {
     throw new ResponseError(404, "Username or user isn't found");
   }
 
-  const data ={}
+  const data = {};
   if (user.name) {
     data.name = user.name;
   }
 
-  if(user.password){
-    data.password = await bcrypt.hash(user.password, 10)
+  if (user.password) {
+    data.password = await bcrypt.hash(user.password, 10);
   }
 
   return prismaClient.user.update({
-    where:{
-      username : user.username
+    where: {
+      username: user.username,
     },
-    data : data,
-    select:{
-      username :true,
-      name: true
-    }
-  })
+    data: data,
+    select: {
+      username: true,
+      name: true,
+    },
+  });
 };
 
-export default { register, login, get, update };
+const logout = async (username) => {
+  username = validate(getUserValidation, username);
+
+  const user = await prismaClient.user.findUnique({
+    where: {
+      username: username,
+    },
+  });
+
+  if(!user){
+    throw new ResponseError(404, "User isn't available");
+  }
+
+  return prismaClient.user.update({
+    where: {
+      username: username,
+    },
+    data: {
+      token: null,
+    },
+    select: {
+      username: true,
+    },
+  });
+};
+
+export default { register, login, get, update, logout };
