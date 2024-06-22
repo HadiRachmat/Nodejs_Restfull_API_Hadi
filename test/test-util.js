@@ -13,17 +13,25 @@ export const createTestUser = async () => {
   await prismaClient.user.create({
     data: {
       username: "test",
-      password: await bcrypt.hash("sangatrahasia",10),
+      password: await bcrypt.hash("sangatrahasia", 10),
       name: "test",
       token: "test",
     },
   });
 };
 
-export const getTestUser = async ()=>{
+export const getTestUser = async () => {
   return prismaClient.user.findUnique({
-    where :{
-      username : "test"
-    }
+    where: {
+      username: "test",
+    },
+  });
+};
+
+export const removeTestAllContact = async () => {
+  await prismaClient.contact.deleteMany({
+    where: {
+      username: "test",
+    },
   })
-}
+};
