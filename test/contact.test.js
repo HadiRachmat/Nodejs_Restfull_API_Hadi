@@ -1,4 +1,5 @@
 import {
+  createManyTestContact,
   createTestContact,
   createTestUser,
   getTestContact,
@@ -8,6 +9,7 @@ import {
 import supertest from "supertest";
 import { web } from "../src/application/web.js";
 import { logger } from "../src/application/logging.js";
+import { query } from "express";
 
 describe(" POST /api/users/contact", function () {
   beforeEach(async () => {
@@ -158,7 +160,7 @@ describe("DELETE /api/users/contact/:contactId ", function () {
   });
 
   it("should can doing remove contact ", async () => {
-    let testContact = await getTestContact(); 
+    let testContact = await getTestContact();
     const result = await supertest(web)
       .delete("/api/users/contact/" + testContact.id)
       .set("Authorization", "test");
@@ -172,12 +174,109 @@ describe("DELETE /api/users/contact/:contactId ", function () {
   });
 
   it("should can doing remove contact ", async () => {
-    let testContact = await getTestContact(); 
+    let testContact = await getTestContact();
     const result = await supertest(web)
-      .delete("/api/users/contact/" +( testContact.id+1))
+      .delete("/api/users/contact/" + (testContact.id + 1))
       .set("Authorization", "test");
 
     // logger.log(result);
     expect(result.status).toBe(404);
+  });
+});
+
+describe("GET /api/contact", function () {
+  beforeEach(async () => {
+    await createTestUser();
+    await createManyTestContact();
+  });
+
+  afterEach(async () => {
+    await removeTestAllContact();
+    await removeTestUser();
+  });
+
+  it("should can doing search Contact without parameter", async () => {
+    const result = await supertest(web)
+      .get("/api/users/contact")
+      .set("Authorization", "test");
+
+    // logger.log(result);
+    expect(result.status).toBe(200);
+    expect(result.body.data.length).toBe(10);
+    expect(result.body.paging.page).toBe(1);
+    expect(result.body.paging.total_page).toBe(2);
+    expect(result.body.paging.total_items).toBe(15);
+  });
+  it("should can doing search Contact without parameter", async () => {
+    const result = await supertest(web)
+      .get("/api/users/contact")
+      .query({
+        page: 2,
+        // limit: 10,
+        // search: "hadi",
+      })
+      .set("Authorization", "test");
+
+    // logger.log(result);
+    expect(result.status).toBe(200);
+    expect(result.body.data.length).toBe(5);
+    expect(result.body.paging.page).toBe(2);
+    expect(result.body.paging.total_page).toBe(2);
+    expect(result.body.paging.total_items).toBe(15);
+  });
+
+
+  it("should can doing search Contact using name", async () => {
+    const result = await supertest(web)
+      .get("/api/users/contact")
+      .query({
+        name: "test1",
+        // limit: 10,
+        // search: "hadi",
+      })
+      .set("Authorization", "test");
+
+    // logger.log(result);
+    expect(result.status).toBe(200);
+    expect(result.body.data.length).toBe(6);
+    expect(result.body.paging.page).toBe(1);
+    expect(result.body.paging.total_page).toBe(1);
+    expect(result.body.paging.total_items).toBe(6);
+  });
+
+  it("should can doing search Contact using email", async () => {
+    const result = await supertest(web)
+      .get("/api/users/contact")
+      .query({
+        email: "test1",
+        // limit: 10,
+        // search: "hadi",
+      })
+      .set("Authorization", "test");
+
+    // logger.log(result);
+    expect(result.status).toBe(200);
+    expect(result.body.data.length).toBe(6);
+    expect(result.body.paging.page).toBe(1);
+    expect(result.body.paging.total_page).toBe(1);
+    expect(result.body.paging.total_items).toBe(6);
+  });
+
+  it("should can doing search Contact using email", async () => {
+    const result = await supertest(web)
+      .get("/api/users/contact")
+      .query({
+        phone: "08090931231",
+        // limit: 10,
+        // search: "hadi",
+      })
+      .set("Authorization", "test");
+
+    // logger.log(result);
+    expect(result.status).toBe(200);
+    expect(result.body.data.length).toBe(6);
+    expect(result.body.paging.page).toBe(1);
+    expect(result.body.paging.total_page).toBe(1);
+    expect(result.body.paging.total_items).toBe(6);
   });
 });
